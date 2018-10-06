@@ -18,7 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	lines, err := reader.LinesFromReader()
+	lines, err := reader.ReadLines()
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(2)
