@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## 0.2.1
+## 0.2.2
  - updated deployment configuration.
 
 ## 0.2.0
