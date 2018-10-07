@@ -1,28 +1,21 @@
 language: go
-
 go:
-  - "1.11.x"
-
+- 1.11.x
 env:
-  - GO111MODULE=on
-
+- GO111MODULE=on
 install:
-  - go get -v ./...
-
-script: 
-  - ./_bin/test.sh
-
+- go get -v ./...
+script:
+- "./_bin/test.sh"
 before_deploy:
-  - ./_bin/build.sh darwin ${TRAVIS_TAG}
-  - ./_bin/build.sh linux ${TRAVIS_TAG}
-
+- "./_bin/build.sh darwin ${TRAVIS_TAG}"
+- "./_bin/build.sh linux ${TRAVIS_TAG}"
 deploy:
   provider: releases
   api_key:
-    secure: E4h5J9g2TTTRriAw9LqwTodPxDL4gP6bEa/u/7o7B1n8t2675P8l9VlGOnCUFh1ioMHIQDbEYyD7d//idScbZTMzN54y0wTzdbfG6kYGf5/dyFdtt2lY6usRTK4AGF0NEXBl03HytgY7zTElpCeULMAhlKXo9e16WXL/TD5+gWfzymln7CQzVv2zvM4LDLw0Dsd+ecW7+iKVHAjab7slstkw5M62avU+hLL4/W3aDcxXFLsn5nA92WcVWtFyAItGyBkpuELeqXzv2tVTwhGTFJOy3yGdqnTcnLWcSAjlE6F4R+DZEUMyRUsWbYDZSatlima+xPSmx00xTG65bYIduureSYc8KX9Mgi43JKXn6pVRhESq7V1HFTQbuwWsstldi0cVmxNm9UPfTxlmlYU0W7JKb3dcet66VHor5rEWqZ6gKNYM40HxRsFPRihce0CQ8IKXtD/vxiWY7+ZPbshSJZtuJvzwRtOG9Q5RA1Tr8DMH5Yq5XPFQl4DhJwtOvZpIhY60guppQZ12i4wp6RJ/lQtOXq+Iqi8KFE+WfVVSYXZ136NB/rPKUKZcecx6i4QjJskg8p3hXc3ZKjeGycDZeQlLcAt9b4OQYPEQlMEQgGTO0hZrInYbmzGToPkNUa9eq11UbaanEln408HOeCFxjMmylzd3NHjSeZCUOJr470I=
+    secure: hWMByvYOZ5whonD6LskJDYBhR0FB/xi/9wHT4gLrrDCI4RAEsOVCfTOUFnOPCqJGVkx77yO023E90tfXIQVOx7HHUUv3FZkjhIfELpJJ4osybynkCZl/3qz/3/Jtg+VkyAPvrgpLqt9kLNM019p7XeMVk2bMa+RxNDptWRWHjQARuTIO0F9ni6otbA0QqyL3BFkD4cN5Cd51jpCGM7lGRI7mMfPF1Sz0akgIhMM7cM74QyNf15WXPgcbQ0UfSTiPBASjpFMoeG3MKXeZxExfkj6Scvy4qPVzucCk8xAPzRfjgqI28A2heiNZQeKY0v+UgpZsg4LHtCMbo+FBq30BEbQPWMDy5qZktr9GW2auI3DPN8Kg6VuLPZpjwLqc40caTjP7ZK6tq48EndVDN83w1GhBRO7KBgybwQr+7Gnq8Zvkjowy7kKYHtuSWM0oZeIBFBnU91jtrnqvenoEDyyRXl1jlb/XvwwcrmiAiHaD8MtcHf2IY5+hXua4Mf/j3rhIZIPQ4I2/IxAZKsjUt4O5q7MYj87Ymm5dK0mSMphhxdSEu0FgZAzDUyL0+h5PHAqBrQZA0YXVlqsSgi7hZBX8yNFcqRWDUu+NlRi0L6IAWsz4rRIcD4IelXHFPxGPup0WTrNWZ4GzuSzFySCrMLzCSP7W35nD4NQLzUeEly99pVk=
   file: 
-    - "lsh_darwin_$TRAVIS_TAG"
-    - "lsh_linux_$TRAVIS_TAG"
-  skip_cleanup: true
+    - "lsh_darwin_${TRAVIS_TAG}"
+    - "lsh_linux_${TRAVIS_TAG}"
   on:
     tags: true
