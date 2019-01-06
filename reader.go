@@ -74,7 +74,7 @@ func NewFromString(input string) Reader {
 
 // Read reads into given bytes (does not close reader).
 func (in *Reader) Read(p []byte) (n int, err error) {
-	return in.Read(p)
+	return in.reader.Read(p)
 }
 
 // ReadLine reads line from reader (does not close reader).
