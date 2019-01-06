@@ -72,6 +72,11 @@ func NewFromString(input string) Reader {
 	}
 }
 
+// Read reads into given bytes (does not close reader).
+func (in *Reader) Read(p []byte) (n int, err error) {
+	return in.Read(p)
+}
+
 // ReadLine reads line from reader (does not close reader).
 func (in *Reader) ReadLine() (string, error) {
 	var text string
@@ -85,7 +90,7 @@ func (in *Reader) ReadLine() (string, error) {
 	return text, nil
 }
 
-// ReadWords provides slice of words from input split by white space.
+// ReadWords provides slice of all words from input split by white space and closes the reader.
 func (in *Reader) ReadWords() ([]string, error) {
 	tokens := make([]string, 0)
 	lines, err := in.ReadLines()
@@ -98,17 +103,15 @@ func (in *Reader) ReadWords() ([]string, error) {
 	return tokens, nil
 }
 
-// Close ...
-func (in *Reader) Close() {
+// Close closes reader.
+func (in *Reader) Close() error {
 	if closer, ok := in.reader.(io.Closer); ok {
-		err := closer.Close()
-		if err != nil {
-			panic(err)
-		}
+		return closer.Close()
 	}
+	return nil
 }
 
-// ReadLines provides slice of text lines from input.
+// ReadLines provides slice of all text lines from input and closes the reader.
 func (in *Reader) ReadLines() ([]string, error) {
 	defer in.Close()
 	var lines []string

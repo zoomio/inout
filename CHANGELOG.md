@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.3.0
+ - added `Reader#Read` method and updated `Reader#Close` method, to be compatible with `io.ReadCloser` interface.
+
 ## 0.2.3
  - binary release.
 
