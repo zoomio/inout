@@ -19,14 +19,14 @@ type Reader struct {
 
 // New initializes an instance of Reader from STDIN, file or web page.
 //
-// name - the filename or web page name, reads from STDIN if name is empty.
+// source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
-func New(name string) (Reader, error) {
+func New(source, selector string) (Reader, error) {
 	var reader io.Reader
 	in := Reader{}
 
 	// STDIN
-	if name == "" {
+	if source == "" {
 		stat, err := os.Stdin.Stat()
 		if err != nil {
 			return in, fmt.Errorf("error in reading from STDIN: %v", err)
@@ -37,24 +37,33 @@ func New(name string) (Reader, error) {
 		reader = bufio.NewReader(os.Stdin)
 
 		// HTTP
-	} else if strings.HasPrefix(name, "http") || strings.HasPrefix(name, "https") {
-		resp, err := http.Get(name)
-		if err != nil {
-			return in, fmt.Errorf("provided name=%s is not a file and not a URL: %v", name, err)
+	} else if strings.HasPrefix(source, "http") || strings.HasPrefix(source, "https") {
+
+		if (selector != "") {
+			text, err := waitForDomElement(selector, source)
+			if err != nil {
+				return in, fmt.Errorf("error in waiting for %s in %s: %v", selector, source, err)
+			}
+			reader = strings.NewReader(text)
+		} else {
+			resp, err := http.Get(source)
+			if err != nil {
+				return in, fmt.Errorf("provided source=%s is not a file and not a URL: %v", source, err)
+			}
+			reader = resp.Body
 		}
-		reader = resp.Body
 
 		// File system
-	} else if _, err := os.Stat(name); err == nil {
-		f, err := os.Open(name)
+	} else if _, err := os.Stat(source); err == nil {
+		f, err := os.Open(source)
 		if err != nil {
-			return in, fmt.Errorf("error in opening file %s for reading: %v", name, err)
+			return in, fmt.Errorf("error in opening file %s for reading: %v", source, err)
 		}
 		reader = bufio.NewReader(f)
 
-		// Unresolvable "name"
+		// Unresolvable "source"
 	} else {
-		return Reader{}, fmt.Errorf("unknown type of provided input name: %s", name)
+		return Reader{}, fmt.Errorf("unknown type of provided input source: %s", source)
 	}
 
 	return Reader{

@@ -9,10 +9,11 @@ import (
 )
 
 func main() {
-	source := flag.String("s", "", "Source")
+	source := flag.String("s", "", "Source, e.g. -s https://stackoverflow.com")
+	selector := flag.String("dom", "", "DOM CSS selector, waits until element available, e.g. -dom 'p'")
 	flag.Parse()
 
-	reader, err := inout.New(*source)
+	reader, err := inout.New(*source, *selector)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)
