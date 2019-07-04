@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/zoomio/inout.svg?branch=master)](https://travis-ci.com/zoomio/inout)
 
-Input / Output processor.
+Retrieves contents of the provided source: STDIN, HTTP(S) or FS.
 
 ## Usage
 

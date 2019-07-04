@@ -24,12 +24,6 @@ func waitForDomElement(selector, host string) (string, error) {
 		return "", err
 	}
 
-	// get text
-	// var res string
-	// if err := chromedp.Run(ctx, chromedp.Text(selector, &res, chromedp.NodeVisible)); err != nil {
-	// 	return "", err
-	// }
-
 	// get project link text
 	var nodes []*cdp.Node
 	if err := chromedp.Run(ctx, chromedp.Nodes(selector, &nodes)); err != nil {
@@ -38,10 +32,26 @@ func waitForDomElement(selector, host string) (string, error) {
 
 	var b strings.Builder
 	for _, n := range nodes {
-		fmt.Printf("- %s\n", n.NodeValue)
-		fmt.Fprintf(&b, "%s ", n.NodeValue)
+		fmt.Fprintf(&b, "%s ", getNodeText(n))
 	}
 	return strings.TrimSpace(b.String()), nil
+}
 
-	// return strings.TrimSpace(res), nil
+func getNodeText(node *cdp.Node) string {
+	if node.NodeValue != "" {
+		return node.NodeValue
+	}
+
+	if node.ChildNodeCount == 0 {
+		return ""
+	}
+
+	for _, n := range node.Children {
+		text := getNodeText(n)
+		if text != "" {
+			return text
+		}
+	}
+
+	return ""
 }
