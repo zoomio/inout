@@ -1,0 +1,49 @@
+package inout
+
+import (
+	"strings"
+	"bufio"
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func Test_handleHTTP(t *testing.T) {
+	defer stopServer(startServer(fmt.Sprintf(":%d", port), readerIndexHTML))
+	reader, err := handleHTTP(fmt.Sprintf("http://localhost:%d", port), "")
+	assert.Nil(t, err)
+	
+	r := &Reader{
+		reader:  reader,
+		scanner: bufio.NewScanner(reader),
+	}
+	lines, err := r.ReadLines()
+	assert.Nil(t, err)
+	assert.Equal(t, readerIndexHTML, strings.Join(lines, "\n"))
+}
+
+const (
+	readerIndexHTML = `<!doctype html>
+<html>
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <div id="box1">
+    <div id="box2">
+      <p class="line">There was a Boy whose name was Jim;</p>
+	  <p class="line">His Friends were very good to him.</p>
+	  <p class="line">They gave him Tea, and Cakes, and Jam,</p>
+	  <p class="line">And slices of delicious Ham,</p>
+	  <p class="line">And Chocolate with pink inside,</p>
+	  <p class="line">And little Tricycles to ride,</p>
+	  <p class="line">Andread him Stories through and through,</p>
+	  <p class="line">And even took him to the Zoo—</p>
+	  <p class="line">But there it was the dreadful Fate</p>
+	  <p class="line">Befell him, which I now relate.</p>
+    </div>
+  </div>
+</body>
+</html>`
+)

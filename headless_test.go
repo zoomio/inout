@@ -11,19 +11,18 @@ import (
 )
 
 func Test_waitForDomElement(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", port)))
-	innerContents, err := waitForDomElement("p.delayed-paragraph", fmt.Sprintf("http://localhost:%d", port))
-	fmt.Printf("%s\n", innerContents)
+	defer stopServer(startServer(fmt.Sprintf(":%d", port), headlessIndexHTML))
+	innerContents, err := waitForDomElement("div p", fmt.Sprintf("http://localhost:%d", port))
 	assert.Nil(t, err)
-	assert.NotEqual(t, innerContents, "")
+	assert.Equal(t, headlessExpectedHTML, innerContents)
 }
 
 // startServer is a simple HTTP server that displays the passed headers in the html.
-func startServer(addr string) *http.Server {
+func startServer(addr, document string) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(res http.ResponseWriter, _ *http.Request) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprint(res, indexHTML)
+		fmt.Fprint(res, document)
 	})
 	srv := &http.Server{Addr: addr, Handler: mux}
 	go func() {
@@ -43,42 +42,42 @@ func stopServer(srv *http.Server) {
 }
 
 const (
-	port      = 8655
-	indexHTML = `<!doctype html>
+	port = 8655
+
+	headlessExpectedHTML = "<p>There was a Boy whose name was Jim;</p>" +
+		"<p>His Friends were very good to him.</p>" +
+		"<p>They gave him Tea, and Cakes, and Jam,</p>" +
+		"<p>And slices of delicious Ham,</p>" +
+		"<p>And Chocolate with pink inside,</p>" +
+		"<p>And little Tricycles to ride,</p>" +
+		"<p>Andread him Stories through and through,</p>" +
+		"<p>And even took him to the Zoo—</p>" +
+		"<p>But there it was the dreadful Fate</p>" +
+		"<p>Befell him, which I now relate.</p>"
+
+	headlessIndexHTML = `<!doctype html>
 <html>
 <head>
   <title>Test</title>
 </head>
 <body>
-  <div id="box1">
+  <div id="box1" style="display:none">
     <div id="box2">
-      <p>There was a Boy whose name was Jim;</p>
-	  <p>His Friends were very good to him.
-	  <p>They gave him Tea, and Cakes, and Jam,</p>
-	  <p>And slices of delicious Ham,</p>
-	  <p>And Chocolate with pink inside,</p>
-	  <p>And little Tricycles to ride,</p>
-	  <p>Andread him Stories through and through,</p>
-	  <p>And even took him to the Zoo—</p>
-	  <p>But there it was the dreadful Fate</p>
-	  <p>Befell him, which I now relate.</p>
+      <p class="line">There was a Boy whose name was Jim;</p>
+	  <p class="line">His Friends were very good to him.</p>
+	  <p class="line">They gave him Tea, and Cakes, and Jam,</p>
+	  <p class="line">And slices of delicious Ham,</p>
+	  <p class="line">And Chocolate with pink inside,</p>
+	  <p class="line">And little Tricycles to ride,</p>
+	  <p class="line">Andread him Stories through and through,</p>
+	  <p class="line">And even took him to the Zoo—</p>
+	  <p class="line">But there it was the dreadful Fate</p>
+	  <p class="line">Befell him, which I now relate.</p>
     </div>
-  </div>
-  <div id="box3" style="display:none">
-	<p class="delayed-paragraph">
-		Now this was Jim’s especial Foible,<br />
-		He ran away when he was able,<br />
-		And on this inauspicious day<br />
-		He slipped his hand and ran away!<br />
-		He hadn’t gone a yard when—Bang!<br />
-		With open Jaws, a Lion sprang,<br />
-		And hungrily began to eat<br />
-		The Boy: beginning at his feet.<br />
-	</p>
   </div>
   <script>
   	setTimeout(function() {
-		document.querySelector('#box3').style.display = '';
+		document.querySelector('#box1').style.display = '';
 	}, 3000);
   </script>
 </body>
