@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.5.0
+ - CSS query (`-q` option): concat all found texts, surround found texts with corresponding HTML tags, added tests for HTTP and File readers.
+
 ## 0.4.0
  - added `-q` option to allow query for contents of certain DOM elements via CSS selector;
  - constructors of the `Reader` are now returning reference instead of value.
