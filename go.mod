@@ -7,4 +7,5 @@ require (
 	github.com/chromedp/chromedp v0.3.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/stretchr/testify v1.3.0
+	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
 )

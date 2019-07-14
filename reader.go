@@ -13,6 +13,8 @@ import (
 // Reader - Input. This struct provides methods for reading strings
 // and numbers from standard input, file input, URLs, and sockets.
 type Reader struct {
+	source  string
+	query   string
 	reader  io.Reader
 	scanner *bufio.Scanner
 }
@@ -21,40 +23,55 @@ type Reader struct {
 //
 // source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
-func New(source, query string) (*Reader, error) {
+func New(source string) (Reader, error) {
+	return NewInOut(WithSource(source))
+}
+
+// NewInOut initializes an instance of Reader from STDIN, file or web page.
+//
+// source - the filename or web page name, reads from STDIN if name is empty.
+// Panics on errors.
+func NewInOut(options ...Option) (Reader, error) {
 	var reader io.Reader
 	var err error
 
+	r := &Reader{}
+
+	// apply custom configuration
+	for _, option := range options {
+		option(r)
+	}
+
 	// STDIN
-	if source == "" {
+	if r.source == "" {
 		reader, err = handleSTDIN()
 		if err != nil {
-			return nil, err
+			return *r, err
 		}
 
 		// HTTP
-	} else if strings.HasPrefix(source, "http") || strings.HasPrefix(source, "https") {
-		reader, err = handleHTTP(source, query)
+	} else if strings.HasPrefix(r.source, "http") || strings.HasPrefix(r.source, "https") {
+		reader, err = handleHTTP(r.source, r.query)
 		if err != nil {
-			return nil, err
+			return *r, err
 		}
 
 		// File system
-	} else if _, err := os.Stat(source); err == nil {
-		reader, err = handleFS(source)
+	} else if _, err := os.Stat(r.source); err == nil {
+		reader, err = handleFS(r.source)
 		if err != nil {
-			return nil, err
+			return *r, err
 		}
 
 		// Unresolvable "source"
 	} else {
-		return nil, fmt.Errorf("unknown type of provided input source: %s", source)
+		return *r, fmt.Errorf("unknown type of provided input source: %s", r.source)
 	}
 
-	return &Reader{
-		reader:  reader,
-		scanner: bufio.NewScanner(reader),
-	}, nil
+	r.reader = reader
+	r.scanner = bufio.NewScanner(reader)
+
+	return *r, nil
 }
 
 // NewFromString initializes an input from string.
@@ -134,13 +151,13 @@ func handleHTTP(source, query string) (io.Reader, error) {
 	if query != "" {
 		text, err := waitForDomElement(query, source)
 		if err != nil {
-			return nil, fmt.Errorf("error in waiting for %s in %s: %v", query, source, err)
+			return nil, fmt.Errorf("error in waiting for query=%s in source=%s: %v", query, source, err)
 		}
 		return strings.NewReader(text), nil
 	}
 	resp, err := http.Get(source)
 	if err != nil {
-		return nil, fmt.Errorf("provided source=%s is not a file and not a URL: %v", source, err)
+		return nil, fmt.Errorf("error in calling GET on provided source=%s: %v", source, err)
 	}
 	return resp.Body, nil
 }
@@ -148,7 +165,7 @@ func handleHTTP(source, query string) (io.Reader, error) {
 func handleFS(source string) (io.Reader, error) {
 	f, err := os.Open(source)
 	if err != nil {
-		return nil, fmt.Errorf("error in opening file %s for reading: %v", source, err)
+		return nil, fmt.Errorf("error in opening file source=%s for reading: %v", source, err)
 	}
 	return bufio.NewReader(f), nil
 }

@@ -14,7 +14,7 @@ func main() {
 		"e.g. `-q p` will fetch contents of all <p> tags on the given source")
 	flag.Parse()
 
-	reader, err := inout.New(*source, *query)
+	reader, err := inout.NewInOut(inout.WithSource(*source), inout.WithQuery(*query))
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)
