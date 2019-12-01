@@ -12,7 +12,7 @@ import (
 
 func Test_waitForDomElement(t *testing.T) {
 	defer stopServer(startServer(fmt.Sprintf(":%d", port), headlessIndexHTML))
-	innerContents, err := waitForDomElement("div p", fmt.Sprintf("http://localhost:%d", port))
+	innerContents, err := waitForDomElement(context.TODO(), "div p", fmt.Sprintf("http://localhost:%d", port), false)
 	assert.Nil(t, err)
 	assert.Equal(t, headlessExpectedHTML, innerContents)
 }

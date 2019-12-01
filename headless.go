@@ -9,25 +9,41 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-func waitForDomElement(selector, host string) (string, error) {
+func waitForDomElement(ctx context.Context, selector, host string, verbose bool) (string, error) {
 	// create context
-	ctx, cancel := chromedp.NewContext(context.Background())
+	childCtx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
+	if verbose {
+		fmt.Printf("navigating to %s\n", host)
+	}
+
 	// navigate
-	if err := chromedp.Run(ctx, chromedp.Navigate(host)); err != nil {
+	if err := chromedp.Run(childCtx, chromedp.Navigate(host)); err != nil {
 		return "", err
 	}
 
-	// wait visible
-	if err := chromedp.Run(ctx, chromedp.WaitVisible(selector)); err != nil {
+	if verbose {
+		fmt.Printf("waiting for \"%s\" to be visible\n", selector)
+	}
+
+	// wait to be visible
+	if err := chromedp.Run(childCtx, chromedp.WaitVisible(selector)); err != nil {
 		return "", err
 	}
 
-	// get project link text
+	if verbose {
+		fmt.Println("collecting nodes")
+	}
+
+	// collect relevant nodes
 	var nodes []*cdp.Node
-	if err := chromedp.Run(ctx, chromedp.Nodes(selector, &nodes)); err != nil {
+	if err := chromedp.Run(childCtx, chromedp.Nodes(selector, &nodes)); err != nil {
 		return "", err
+	}
+
+	if verbose {
+		fmt.Println("collecting text from nodes")
 	}
 
 	var b strings.Builder

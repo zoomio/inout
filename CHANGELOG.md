@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.7.0
+ - increased buffer size to 1MB;
+ - introduced option for setting timeout `-t`, defaults to 5 seconds;
+ - introduced option for enabling verbose mode `-v`.
+
 ## 0.6.0
  - reverted back `#New` to have only single argument - `source` for backwards compatibility;
  - re-used "self-referential functions and the design of options" approach by Rob Pike by introducing `Option` and new constructor `#NewInOut` which uses it.

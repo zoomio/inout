@@ -2,12 +2,14 @@ package inout
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // Reader - Input. This struct provides methods for reading strings
@@ -15,7 +17,10 @@ import (
 type Reader struct {
 	source  string
 	query   string
+	timeout time.Duration
+	verbose bool
 	reader  io.Reader
+	buffer  []byte
 	scanner *bufio.Scanner
 }
 
@@ -23,15 +28,15 @@ type Reader struct {
 //
 // source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
-func New(source string) (Reader, error) {
-	return NewInOut(WithSource(source))
+func New(ctx context.Context, source string) (Reader, error) {
+	return NewInOut(ctx, Source(source))
 }
 
 // NewInOut initializes an instance of Reader from STDIN, file or web page.
 //
 // source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
-func NewInOut(options ...Option) (Reader, error) {
+func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 	var reader io.Reader
 	var err error
 
@@ -42,6 +47,28 @@ func NewInOut(options ...Option) (Reader, error) {
 		option(r)
 	}
 
+	childCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	start := time.Now()
+	end := start.Add(r.timeout)
+	go func() {
+		ticker := time.NewTicker(10 * time.Millisecond)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if r.timeout > 0 && end.Before(time.Now()) {
+					if r.verbose {
+						fmt.Printf("timeout of %v passed, stopping...\n", r.timeout)
+					}
+					cancel()
+					return
+				}
+			}
+		}
+	}()
+
 	// STDIN
 	if r.source == "" {
 		reader, err = handleSTDIN()
@@ -51,7 +78,10 @@ func NewInOut(options ...Option) (Reader, error) {
 
 		// HTTP
 	} else if strings.HasPrefix(r.source, "http") || strings.HasPrefix(r.source, "https") {
-		reader, err = handleHTTP(r.source, r.query)
+		if r.verbose {
+			fmt.Println("source is HTTP/HTTPS")
+		}
+		reader, err = handleHTTP(childCtx, r.source, r.query, r.verbose)
 		if err != nil {
 			return *r, err
 		}
@@ -69,7 +99,9 @@ func NewInOut(options ...Option) (Reader, error) {
 	}
 
 	r.reader = reader
+	r.buffer = make([]byte, 64*1024)
 	r.scanner = bufio.NewScanner(reader)
+	r.scanner.Buffer(r.buffer, 102481024)
 
 	return *r, nil
 }
@@ -147,9 +179,9 @@ func handleSTDIN() (io.Reader, error) {
 	return bufio.NewReader(os.Stdin), nil
 }
 
-func handleHTTP(source, query string) (io.Reader, error) {
+func handleHTTP(ctx context.Context, source, query string, verbose bool) (io.Reader, error) {
 	if query != "" {
-		text, err := waitForDomElement(query, source)
+		text, err := waitForDomElement(ctx, query, source, verbose)
 		if err != nil {
 			return nil, fmt.Errorf("error in waiting for query=%s in source=%s: %v", query, source, err)
 		}

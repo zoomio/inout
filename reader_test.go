@@ -2,6 +2,7 @@ package inout
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -11,7 +12,7 @@ import (
 
 func Test_handleHTTP(t *testing.T) {
 	defer stopServer(startServer(fmt.Sprintf(":%d", port), readerIndexHTML))
-	reader, err := handleHTTP(fmt.Sprintf("http://localhost:%d", port), "")
+	reader, err := handleHTTP(context.TODO(), fmt.Sprintf("http://localhost:%d", port), "", false)
 	assert.Nil(t, err)
 
 	r := &Reader{
