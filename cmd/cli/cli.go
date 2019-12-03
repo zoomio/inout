@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"context"
 	"flag"
 	"fmt"
@@ -25,15 +26,19 @@ func main() {
 		inout.Timeout(*timeout),
 		inout.Verbose(*verbose))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to create reader: %v\n", err)
 		os.Exit(1)
 	}
 
-	lines, err := reader.ReadLines()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(2)
+	for {
+		line, err := reader.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				os.Exit(0)
+			}
+			fmt.Fprintf(os.Stderr, "failed to read line: %v\n", err)
+			os.Exit(2)
+		}
+		fmt.Println(line)
 	}
-
-	fmt.Println(lines)
 }

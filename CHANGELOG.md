@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.8.0
+ - better output to STDIN in cli, line by line instead of printing slice of lines.
+
 ## 0.7.0
  - increased buffer size to 1MB;
  - introduced option for setting timeout `-t`, defaults to 5 seconds;

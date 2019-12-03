@@ -125,6 +125,8 @@ func (in *Reader) ReadLine() (string, error) {
 	var text string
 	if in.scanner.Scan() {
 		text = in.scanner.Text()
+	} else {
+		return "", io.EOF
 	}
 	err := in.scanner.Err()
 	if err != nil {
