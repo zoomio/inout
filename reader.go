@@ -101,7 +101,7 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 	r.reader = reader
 	r.buffer = make([]byte, 64*1024)
 	r.scanner = bufio.NewScanner(reader)
-	r.scanner.Buffer(r.buffer, 102481024)
+	r.scanner.Buffer(r.buffer, 1024*1024)
 
 	return *r, nil
 }

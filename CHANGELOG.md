@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.8.1
+ - small fix: changed size of the read buffer from `102481024` to `1024*1024`.
+
 ## 0.8.0
  - better output to STDIN in cli, line by line instead of printing slice of lines.
 
