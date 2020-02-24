@@ -188,7 +188,7 @@ func handleHTTP(ctx context.Context, source, query string, verbose bool) (io.Rea
 		}
 		return strings.NewReader(text), nil
 	}
-	res := fetch(ctx, source)
+	res := fetch(source)
 	if res.err != nil {
 		return nil, fmt.Errorf("error in fetching provided source=%s: %w", source, res.err)
 	}
