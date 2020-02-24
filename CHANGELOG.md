@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.9.0
+ - added retries with backoff to HTML calls.
+
 ## 0.8.2
  - small fix: changed size of the read buffer from `102481024` to `1024*1024`.
 

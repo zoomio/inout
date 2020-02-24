@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -173,7 +172,7 @@ func (in *Reader) ReadLines() ([]string, error) {
 func handleSTDIN() (io.Reader, error) {
 	stat, err := os.Stdin.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("error in reading from STDIN: %v", err)
+		return nil, fmt.Errorf("error in reading from STDIN: %w", err)
 	}
 	if (stat.Mode() & os.ModeCharDevice) != 0 {
 		return nil, errors.New("unsupported mode")
@@ -185,21 +184,21 @@ func handleHTTP(ctx context.Context, source, query string, verbose bool) (io.Rea
 	if query != "" {
 		text, err := waitForDomElement(ctx, query, source, verbose)
 		if err != nil {
-			return nil, fmt.Errorf("error in waiting for query=%s in source=%s: %v", query, source, err)
+			return nil, fmt.Errorf("error in waiting for query=%s in source=%s: %w", query, source, err)
 		}
 		return strings.NewReader(text), nil
 	}
-	resp, err := http.Get(source)
-	if err != nil {
-		return nil, fmt.Errorf("error in calling GET on provided source=%s: %v", source, err)
+	res := fetch(ctx, source)
+	if res.err != nil {
+		return nil, fmt.Errorf("error in fetching provided source=%s: %w", source, res.err)
 	}
-	return resp.Body, nil
+	return res.resp.Body, nil
 }
 
 func handleFS(source string) (io.Reader, error) {
 	f, err := os.Open(source)
 	if err != nil {
-		return nil, fmt.Errorf("error in opening file source=%s for reading: %v", source, err)
+		return nil, fmt.Errorf("error in opening file source=%s for reading: %w", source, err)
 	}
 	return bufio.NewReader(f), nil
 }

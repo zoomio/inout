@@ -11,9 +11,10 @@ import (
 )
 
 func Test_handleHTTP(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", port), readerIndexHTML))
+	defer stopServer(startServer(fmt.Sprintf(":%d", port), readerIndexHTML, 200))
 	reader, err := handleHTTP(context.TODO(), fmt.Sprintf("http://localhost:%d", port), "", false)
 	assert.Nil(t, err)
+	assert.NotNil(t, reader)
 
 	r := &Reader{
 		reader:  reader,
@@ -27,6 +28,7 @@ func Test_handleHTTP(t *testing.T) {
 func Test_handleFS(t *testing.T) {
 	reader, err := handleFS("file_reader_test.txt")
 	assert.Nil(t, err)
+	assert.NotNil(t, reader)
 
 	r := &Reader{
 		reader:  reader,

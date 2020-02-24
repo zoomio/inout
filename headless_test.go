@@ -11,16 +11,17 @@ import (
 )
 
 func Test_waitForDomElement(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", port), headlessIndexHTML))
+	defer stopServer(startServer(fmt.Sprintf(":%d", port), headlessIndexHTML, 200))
 	innerContents, err := waitForDomElement(context.TODO(), "div p", fmt.Sprintf("http://localhost:%d", port), false)
 	assert.Nil(t, err)
 	assert.Equal(t, headlessExpectedHTML, innerContents)
 }
 
 // startServer is a simple HTTP server that displays the passed headers in the html.
-func startServer(addr, document string) *http.Server {
+func startServer(addr, document string, status int) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(res http.ResponseWriter, _ *http.Request) {
+		res.WriteHeader(status)
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprint(res, document)
 	})
