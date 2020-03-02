@@ -3,7 +3,6 @@ package inout
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -11,8 +10,9 @@ import (
 )
 
 func Test_handleHTTP(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", port), readerIndexHTML, 200))
-	reader, err := handleHTTP(context.TODO(), fmt.Sprintf("http://localhost:%d", port), "", false)
+	ts := startServer(readerIndexHTML, 200)
+	defer ts.Close()
+	reader, err := handleHTTP(context.TODO(), ts.URL, "", false)
 	assert.Nil(t, err)
 	assert.NotNil(t, reader)
 

@@ -51,7 +51,7 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 	start := time.Now()
 	end := start.Add(r.timeout)
 	go func() {
-		ticker := time.NewTicker(10 * time.Millisecond)
+		ticker := time.NewTicker(30 * time.Millisecond)
 		for {
 			select {
 			case <-ctx.Done():

@@ -1,7 +1,6 @@
 package inout
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -9,8 +8,9 @@ import (
 )
 
 func Test_fetch(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", 8666), clientHTML, 200))
-	res := fetch("http://localhost:8666")
+	ts := startServer(clientHTML, 200)
+	defer ts.Close()
+	res := fetch(ts.URL)
 
 	assert.NotNil(t, res)
 
@@ -24,8 +24,9 @@ func Test_fetch(t *testing.T) {
 }
 
 func Test_fetch_retries(t *testing.T) {
-	defer stopServer(startServer(fmt.Sprintf(":%d", 8666), "", 429))
-	res := fetch("http://localhost:8666")
+	ts := startServer("", 429)
+	defer ts.Close()
+	res := fetch(ts.URL)
 	assert.NotNil(t, res)
 	assert.NotNil(t, res.err)
 	assert.Equal(t, 3, res.attempts)
