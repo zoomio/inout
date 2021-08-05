@@ -1,0 +1,7 @@
+/inout*
+*.out
+coverage.txt
+*.prof
+*.svg
+*.png
+*.rb
