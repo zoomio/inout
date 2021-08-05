@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.11.0
+ - bumped `github.com/chromedp/chromedp`.
+
 ## 0.10.0
  - improved `-q` option, it is now acts as `document.querySelectorAll()` so it will return all the matching nodes.
 
