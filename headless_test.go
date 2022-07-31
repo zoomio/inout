@@ -4,29 +4,107 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_waitForDomElement(t *testing.T) {
-	ts := startServer(headlessIndexHTML, 200)
-	defer ts.Close()
-	innerContents, err := waitForDomElement(context.TODO(), "div p", ts.URL, false)
-	assert.Nil(t, err)
-	assert.Equal(t, headlessExpectedHTML, innerContents)
+var (
+	serverPort = 8655
+	serverAddr = fmt.Sprintf(":%d", serverPort)
+	source     = fmt.Sprintf("http://localhost:%d", serverPort)
+)
+
+// table driven tests
+var headlessTests = []struct {
+	name string
+
+	httpStatus int
+	input      *config
+
+	expected *headlesResult
+	err      error
+}{
+	{
+		"headless_query",
+		200,
+		&config{source: source, query: "div p"},
+		&headlesResult{htmlDoc: headlessExpectedHTML},
+		nil,
+	},
+	{
+		"headless_waitFor",
+		200,
+		&config{source: source, waitFor: "body"},
+		&headlesResult{htmlDoc: headlessIndexHTML},
+		nil,
+	},
+	{
+		"headless_waitUntil",
+		200,
+		&config{source: source, waitUntil: 50 * time.Millisecond},
+		&headlesResult{htmlDoc: headlessIndexHTML},
+		nil,
+	},
+	{
+		"headless_screenshot",
+		200,
+		&config{source: source, waitUntil: 50 * time.Millisecond, screenshot: true},
+		&headlesResult{htmlDoc: headlessIndexHTML},
+		nil,
+	},
 }
 
+func Test_headless(t *testing.T) {
+	ctx := context.Background()
+	for _, tt := range headlessTests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer stopServer(ctx, startServer(headlessIndexHTML, tt.httpStatus))
+			res, err := headless(ctx, tt.input)
+
+			if tt.err != nil {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+
+			if tt.expected != nil {
+				assert.NotNil(t, res)
+				assert.Equal(t, tt.expected.htmlDoc, res.htmlDoc)
+				if len(tt.expected.imgBytes) > 0 {
+					assert.Len(t, res.imgBytes, len(tt.expected.imgBytes))
+				}
+			}
+		})
+	}
+}
+
+// ------------------------------- Setup -------------------------------
+
 // startServer is a simple HTTP server that displays the passed headers in the html.
-func startServer(document string, status int) *httptest.Server {
+func startServer(pageHTML string, status int) *http.Server {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(res http.ResponseWriter, _ *http.Request) {
-		res.WriteHeader(status)
-		res.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprint(res, document)
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(status)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		fmt.Fprint(w, pageHTML)
 	})
-	return httptest.NewServer(mux)
+	srv := &http.Server{Addr: serverAddr, Handler: mux}
+	go func() {
+		// returns ErrServerClosed on graceful close
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			fmt.Printf("ListenAndServe(): %s\n", err)
+		}
+	}()
+	return srv
+}
+
+func stopServer(c context.Context, srv *http.Server) {
+	// close the server gracefully
+	if err := srv.Shutdown(c); err != nil {
+		panic(err) // failure/timeout shutting down the server gracefully
+	}
 }
 
 const (
@@ -41,9 +119,7 @@ const (
 		"<p class=\"line\">But there it was the dreadful Fate</p>" +
 		"<p class=\"line\">Befell him, which I now relate.</p>"
 
-	headlessIndexHTML = `<!doctype html>
-<html>
-<head>
+	headlessIndexHTML = `<!DOCTYPE html><html><head>
   <title>Test</title>
 </head>
 <body>
@@ -66,6 +142,6 @@ const (
 		document.querySelector('#box1').style.display = '';
 	}, 3000);
   </script>
-</body>
-</html>`
+
+</body></html>`
 )

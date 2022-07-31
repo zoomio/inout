@@ -14,10 +14,8 @@ import (
 // Reader - Input. This struct provides methods for reading strings
 // and numbers from standard input, file input, URLs, and sockets.
 type Reader struct {
-	source  string
-	query   string
-	timeout time.Duration
-	verbose bool
+	ImgBytes []byte
+
 	reader  io.Reader
 	buffer  []byte
 	scanner *bufio.Scanner
@@ -36,20 +34,17 @@ func New(ctx context.Context, source string) (Reader, error) {
 // source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
 func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
-	var reader io.Reader
-	var err error
-
-	r := &Reader{}
+	c := &config{}
 
 	// apply custom configuration
 	for _, option := range options {
-		option(r)
+		option(c)
 	}
 
 	childCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	start := time.Now()
-	end := start.Add(r.timeout)
+	end := start.Add(c.timeout)
 	go func() {
 		ticker := time.NewTicker(30 * time.Millisecond)
 		for {
@@ -57,9 +52,9 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if r.timeout > 0 && end.Before(time.Now()) {
-					if r.verbose {
-						fmt.Printf("timeout of %v passed, stopping...\n", r.timeout)
+				if c.timeout > 0 && end.Before(time.Now()) {
+					if c.verbose {
+						fmt.Printf("timeout of %v passed, stopping...\n", c.timeout)
 					}
 					cancel()
 					return
@@ -68,38 +63,40 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 		}
 	}()
 
+	r := &Reader{}
+	var err error
+
 	// STDIN
-	if r.source == "" {
-		reader, err = handleSTDIN()
+	if c.source == "" {
+		r.reader, err = handleSTDIN()
 		if err != nil {
 			return *r, err
 		}
 
 		// HTTP
-	} else if strings.HasPrefix(r.source, "http") || strings.HasPrefix(r.source, "https") {
-		if r.verbose {
+	} else if c.isHTTP() {
+		if c.verbose {
 			fmt.Println("source is HTTP/HTTPS")
 		}
-		reader, err = handleHTTP(childCtx, r.source, r.query, r.verbose)
+		r.reader, r.ImgBytes, err = handleHTTP(childCtx, c)
 		if err != nil {
 			return *r, err
 		}
 
 		// File system
-	} else if _, err := os.Stat(r.source); err == nil {
-		reader, err = handleFS(r.source)
+	} else if c.isFS() {
+		r.reader, err = handleFS(c.source)
 		if err != nil {
 			return *r, err
 		}
 
 		// Unresolvable "source"
 	} else {
-		return *r, fmt.Errorf("unknown type of provided input source: %s", r.source)
+		return *r, fmt.Errorf("unknown type of provided input source: %s", c.source)
 	}
 
-	r.reader = reader
 	r.buffer = make([]byte, 64*1024)
-	r.scanner = bufio.NewScanner(reader)
+	r.scanner = bufio.NewScanner(r.reader)
 	r.scanner.Buffer(r.buffer, 1024*1024)
 
 	return *r, nil
@@ -169,6 +166,29 @@ func (in *Reader) ReadLines() ([]string, error) {
 	return lines, nil
 }
 
+type config struct {
+	source     string
+	query      string
+	waitFor    string
+	waitUntil  time.Duration
+	screenshot bool
+	timeout    time.Duration
+	verbose    bool
+}
+
+func (c *config) isHTTP() bool {
+	return strings.HasPrefix(c.source, "http") || strings.HasPrefix(c.source, "https")
+}
+
+func (c *config) isHeadless() bool {
+	return len(c.query) > 0 || len(c.waitFor) > 0 || c.waitUntil > 0 || c.screenshot
+}
+
+func (c *config) isFS() bool {
+	_, err := os.Stat(c.source)
+	return err == nil
+}
+
 func handleSTDIN() (io.Reader, error) {
 	stat, err := os.Stdin.Stat()
 	if err != nil {
@@ -180,19 +200,19 @@ func handleSTDIN() (io.Reader, error) {
 	return bufio.NewReader(os.Stdin), nil
 }
 
-func handleHTTP(ctx context.Context, source, query string, verbose bool) (io.Reader, error) {
-	if query != "" {
-		text, err := waitForDomElement(ctx, query, source, verbose)
+func handleHTTP(ctx context.Context, c *config) (io.ReadCloser, []byte, error) {
+	if c.isHeadless() {
+		res, err := headless(ctx, c)
 		if err != nil {
-			return nil, fmt.Errorf("error in waiting for query=%s in source=%s: %w", query, source, err)
+			return nil, nil, fmt.Errorf("error in headless query %#v: %w", c, err)
 		}
-		return strings.NewReader(text), nil
+		return io.NopCloser(strings.NewReader(res.htmlDoc)), res.imgBytes, nil
 	}
-	res := fetch(source)
+	res := fetch(c.source)
 	if res.err != nil {
-		return nil, fmt.Errorf("error in fetching provided source=%s: %w", source, res.err)
+		return nil, nil, fmt.Errorf("error in fetching provided source=%s: %w", c.source, res.err)
 	}
-	return res.resp.Body, nil
+	return res.resp.Body, nil, nil
 }
 
 func handleFS(source string) (io.Reader, error) {

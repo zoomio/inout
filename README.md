@@ -4,6 +4,38 @@
 
 Retrieves contents of the provided source: STDIN, HTTP(S) or FS.
 
+## Installation
+
+### Binary
+
+Get the latest [release](https://github.com/zoomio/inout/releases/latest) by running this command in your shell:
+
+For MacOS:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/zoomio/inout/master/_bin/install.sh)" -o darwin
+```
+
+For MacOS (arm64):
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/zoomio/inout/master/_bin/install.sh)" -o darwin arm64
+```
+
+For Linux:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/zoomio/inout/master/_bin/install.sh)" -o linux
+```
+
+For Windows:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/zoomio/inout/master/_bin/install.sh)" -o windows
+```
+
+### Go dependency
+
+```bash
+go get -u github.com/zoomio/inout/...
+```
+
 ## Usage
 
 See [cmd/cli/cli.go](https://raw.githubusercontent.com/zoomio/inout/master/cmd/cli/cli.go)

@@ -12,7 +12,7 @@ import (
 func Test_handleHTTP(t *testing.T) {
 	ts := startServer(readerIndexHTML, 200)
 	defer ts.Close()
-	reader, err := handleHTTP(context.TODO(), ts.URL, "", false)
+	reader, _, err := handleHTTP(context.Background(), &config{source: source})
 	assert.Nil(t, err)
 	assert.NotNil(t, reader)
 

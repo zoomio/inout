@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.12.0
+ - bumped Go to 1.18;
+ - bumped `github.com/chromedp/chromedp`;
+ - bumped `github.com/stretchr/testify`;
+ - fixed `-q` option or `Query` in the code (HTTP/HTML mode only), so now it actually works and retrieves contents of the DOM element for the query;
+ - introduced `-r` option or `WaitFor` (HTTP/HTML mode only) to allow for waiting for certain DOM element to be ready before getting HTML;
+ - introduced `-u` option or `WaitUntil` (HTTP/HTML mode only) to allow to wait for a certain delay before getting HTML;
+ - introduced `-i` option or `Screenshot` (HTTP/HTML mode only) to capture a full screenshot of HTML in the given path.
+
 ## 0.11.0
  - bumped `github.com/chromedp/chromedp`.
 

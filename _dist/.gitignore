@@ -5,3 +5,4 @@ coverage.txt
 *.svg
 *.png
 *.rb
+.DS_Store

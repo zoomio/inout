@@ -4,12 +4,12 @@
 gofmt -w=true -s $(find . -type f -name '*.go' -not -path "./vendor/*")
 
 # linter
-go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-golangci-lint run
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...
 
 # tests & coverage
-go test -coverprofile=coverage.out -v ./...
-go tool cover -func=coverage.out
+go test -coverprofile=_dist/coverage.out -v ./...
+go tool cover -func=_dist/coverage.out
 
 # clean after self
 go mod tidy
