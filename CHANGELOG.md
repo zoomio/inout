@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.12.1
+ - tweaked TTL in the CLI mode.
+
 ## 0.12.0
  - bumped Go to 1.18;
  - bumped `github.com/chromedp/chromedp`;
