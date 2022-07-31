@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	ttl := *timeout
-	if *until > 0 {
+	if ttl > 0 && *until > 0 {
 		ttl += *until
 	}
 
