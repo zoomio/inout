@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -46,7 +45,7 @@ func main() {
 	defer reader.Close()
 
 	if len(*img) > 0 && len(reader.ImgBytes) > 0 {
-		err = ioutil.WriteFile(*img, reader.ImgBytes, 0644)
+		err = os.WriteFile(*img, reader.ImgBytes, 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to store captured image at %s: %v\n", *img, err)
 			os.Exit(3)

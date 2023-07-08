@@ -80,6 +80,15 @@ func Test_headless(t *testing.T) {
 	}
 }
 
+func Benchmark_headless(b *testing.B) {
+	ctx := context.Background()
+	cfg := &config{source: source, waitUntil: 50 * time.Millisecond, screenshot: true}
+	defer stopServer(ctx, startServer(headlessIndexHTML, 200))
+	for i := 0; i < b.N; i++ {
+		_, _ = headless(ctx, cfg)
+	}
+}
+
 // ------------------------------- Setup -------------------------------
 
 // startServer is a simple HTTP server that displays the passed headers in the html.

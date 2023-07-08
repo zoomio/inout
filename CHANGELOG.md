@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.13.0
+ - bumped Go to 1.20;
+ - bumped `github.com/chromedp/chromedp` to v0.9.1;
+ - bumped `github.com/stretchr/testify` v1.8.4.
+
 ## 0.12.1
  - tweaked TTL in the CLI mode.
 

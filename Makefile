@@ -1,6 +1,6 @@
 .PHONY: deps clean build
 
-TAG=0.12.1
+TAG=0.13.0
 BINARY=inout
 DIST_DIR=_dist
 OS=darwin
