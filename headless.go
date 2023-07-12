@@ -16,8 +16,15 @@ type headlesResult struct {
 }
 
 func headless(ctx context.Context, c *config) (*headlesResult, error) {
-	// create context
-	childCtx, cancel := chromedp.NewContext(ctx)
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.DisableGPU,
+	)
+	// Create an allocator
+	allocatorCtx, allocatorCancel := chromedp.NewExecAllocator(ctx, opts...)
+	defer allocatorCancel()
+
+	// Create a new context with the allocator
+	childCtx, cancel := chromedp.NewContext(allocatorCtx)
 	defer cancel()
 
 	var res strings.Builder
@@ -60,12 +67,12 @@ func chromeTasks(c *config, res *strings.Builder, quality int, buf *[]byte) chro
 			}),
 		)
 	} else {
-		tasks = append(tasks, chromedp.ActionFunc(func(c context.Context) error {
-			node, err := dom.GetDocument().Do(c)
+		tasks = append(tasks, chromedp.ActionFunc(func(ctx context.Context) error {
+			node, err := dom.GetDocument().Do(ctx)
 			if err != nil {
 				return err
 			}
-			str, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(c)
+			str, err := dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 			if err != nil {
 				return err
 			}
