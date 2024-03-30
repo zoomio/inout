@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 0.14.0
+- bumped Go to 1.22;
+- bumped `github.com/chromedp/chromedp` to v0.9.2;
+- new argument `-ua` to provide custome User Agent for the HTTP headless calls.
+
 ## 0.13.0
  - bumped Go to 1.20;
  - bumped `github.com/chromedp/chromedp` to v0.9.1;

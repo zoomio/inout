@@ -34,17 +34,17 @@ func New(ctx context.Context, source string) (Reader, error) {
 // source - the filename or web page name, reads from STDIN if name is empty.
 // Panics on errors.
 func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
-	c := &config{}
+	cfg := &config{}
 
 	// apply custom configuration
 	for _, option := range options {
-		option(c)
+		option(cfg)
 	}
 
 	childCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	start := time.Now()
-	end := start.Add(c.timeout)
+	end := start.Add(cfg.timeout)
 	go func() {
 		ticker := time.NewTicker(30 * time.Millisecond)
 		for {
@@ -52,9 +52,9 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if c.timeout > 0 && end.Before(time.Now()) {
-					if c.verbose {
-						fmt.Printf("timeout of %v passed, stopping...\n", c.timeout)
+				if cfg.timeout > 0 && end.Before(time.Now()) {
+					if cfg.verbose {
+						fmt.Printf("timeout of %v passed, stopping...\n", cfg.timeout)
 					}
 					cancel()
 					return
@@ -67,32 +67,32 @@ func NewInOut(ctx context.Context, options ...Option) (Reader, error) {
 	var err error
 
 	// STDIN
-	if c.source == "" {
+	if cfg.source == "" {
 		r.reader, err = handleSTDIN()
 		if err != nil {
 			return *r, err
 		}
 
 		// HTTP
-	} else if c.isHTTP() {
-		if c.verbose {
+	} else if cfg.isHTTP() {
+		if cfg.verbose {
 			fmt.Println("source is HTTP/HTTPS")
 		}
-		r.reader, r.ImgBytes, err = handleHTTP(childCtx, c)
+		r.reader, r.ImgBytes, err = handleHTTP(childCtx, cfg)
 		if err != nil {
 			return *r, err
 		}
 
 		// File system
-	} else if c.isFS() {
-		r.reader, err = handleFS(c.source)
+	} else if cfg.isFS() {
+		r.reader, err = handleFS(cfg.source)
 		if err != nil {
 			return *r, err
 		}
 
 		// Unresolvable "source"
 	} else {
-		return *r, fmt.Errorf("unknown type of provided input source: %s", c.source)
+		return *r, fmt.Errorf("unknown type of provided input source: %s", cfg.source)
 	}
 
 	r.buffer = make([]byte, 64*1024)
@@ -174,6 +174,7 @@ type config struct {
 	screenshot bool
 	timeout    time.Duration
 	verbose    bool
+	userAgent  string
 }
 
 func (c *config) isHTTP() bool {
