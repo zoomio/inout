@@ -12,13 +12,14 @@ import (
 )
 
 var (
-	source  = flag.String("s", "", "Source, e.g. \"-s https://stackoverflow.com\"")
-	query   = flag.String("q", "", "DOM CSS query, waits until element available, e.g. \"-q p\" will return contents of all <p> tags on the given source")
-	ready   = flag.String("r", "", "DOM CSS query, waits until element available, returns the whole HTML document")
-	until   = flag.Duration("u", 0, "duration to wait before getting HTML contents, handy for SPAs, because they keep loading in browsers for some time")
-	img     = flag.String("i", "", "enables capturing screenshot in the provided path")
-	timeout = flag.Duration("t", 5*time.Second, "timeout for the whole fetch, e.g. \"-d 1s\" sets timeout to 1 second")
-	verbose = flag.Bool("v", false, "\"-v\" enables verbose mode")
+	source    = flag.String("s", "", "Source, e.g. \"-s https://stackoverflow.com\"")
+	query     = flag.String("q", "", "DOM CSS query, waits until element available, e.g. \"-q p\" will return contents of all <p> tags on the given source")
+	ready     = flag.String("r", "", "DOM CSS query, waits until element available, returns the whole HTML document")
+	until     = flag.Duration("u", 0, "duration to wait before getting HTML contents, handy for SPAs, because they keep loading in browsers for some time")
+	img       = flag.String("i", "", "enables capturing screenshot in the provided path")
+	userAgent = flag.String("ua", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36", "\"-ua\" provide a custom user agent")
+	timeout   = flag.Duration("t", 5*time.Second, "timeout for the whole fetch, e.g. \"-d 1s\" sets timeout to 1 second")
+	verbose   = flag.Bool("v", false, "\"-v\" enables verbose mode")
 )
 
 func main() {

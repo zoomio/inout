@@ -20,6 +20,9 @@ func headless(ctx context.Context, c *config) (*headlesResult, error) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.DisableGPU,
 	)
+	if c.userAgent != "" {
+		opts = append(opts, chromedp.UserAgent(c.userAgent))
+	}
 	// Create an allocator
 	allocatorCtx, allocatorCancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer allocatorCancel()
@@ -30,7 +33,10 @@ func headless(ctx context.Context, c *config) (*headlesResult, error) {
 
 	var res strings.Builder
 	var img []byte
-	if err := chromedp.Run(childCtx, chromeTasks(c, &res, 90, &img)); err != nil {
+	if err := chromedp.Run(
+		childCtx,
+		// chromedp.Emulate(device.IPhone7), uncomment to emulate devices
+		chromeTasks(c, &res, 90, &img)); err != nil {
 		err = fmt.Errorf("error in running headless to %s: %w", c.source, err)
 		return nil, err
 	}

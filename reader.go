@@ -174,6 +174,7 @@ type config struct {
 	screenshot bool
 	timeout    time.Duration
 	verbose    bool
+	userAgent  string
 }
 
 func (c *config) isHTTP() bool {

@@ -54,4 +54,11 @@ var (
 			c.verbose = verbose
 		}
 	}
+
+	// UserAgent custom user agent for healess Chrome operations.
+	UserAgent = func(ua string) Option {
+		return func(c *config) {
+			c.userAgent = ua
+		}
+	}
 )
