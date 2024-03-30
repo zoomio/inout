@@ -7,6 +7,7 @@ import (
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 )
 
@@ -39,7 +40,12 @@ func headless(ctx context.Context, c *config) (*headlesResult, error) {
 
 // chromeTasks ...
 func chromeTasks(c *config, res *strings.Builder, quality int, buf *[]byte) chromedp.Tasks {
-	tasks := []chromedp.Action{}
+	tasks := []chromedp.Action{chromedp.ActionFunc(func(ctx context.Context) error {
+		c := chromedp.FromContext(ctx)
+		_, err := target.CreateBrowserContext().Do(cdp.WithExecutor(ctx, c.Browser))
+		return err
+	})}
+
 	if c.screenshot {
 		tasks = append(tasks, chromedp.EmulateViewport(1920, 2000))
 	}
